@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "assets:favicon": "node scripts/generate-favicons.mjs"
+    "assets:favicon": "node scripts/generate-favicons.mjs",
+    "assets:og": "node scripts/generate-og-image.mjs"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

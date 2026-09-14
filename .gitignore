@@ -47,7 +47,8 @@ next-env.d.ts
 next-env.d.ts
 
 # local tooling
-scripts/
+scripts/*
+!scripts/generate-og-image.mjs
 .vscode/
 .idea/
 

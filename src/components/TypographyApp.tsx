@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { SourcePanel } from "@/components/editor/SourcePanel";
 import { ResultPanel } from "@/components/result/ResultPanel";
 import { SettingsDrawer } from "@/components/settings/SettingsDrawer";
@@ -323,10 +324,9 @@ export function TypographyApp() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-zinc-400 dark:text-zinc-500">
-          Текст обрабатывается в вашем браузере и не отправляется на сервер.
-        </p>
       </main>
+
+      <Footer />
 
       <SettingsDrawer
         open={settingsOpen}
