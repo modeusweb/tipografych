@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/* Вариант тёмной темы активируется классом .dark на <html> (см. useTheme). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: var(--font-inter);
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Подсветка выделенного текста (выбор мышью) в основном и кодовом полях. */
+::selection {
+  background-color: color-mix(in oklab, oklch(0.51 0.23 277) 22%, transparent);
+}
+
+/* Каретка ввода в textarea на всю глубину темы. */
+textarea {
+  caret-color: oklch(0.51 0.23 277);
+}
