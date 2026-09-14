@@ -141,7 +141,7 @@ export function SourcePanel({
         </span>
       </div>
 
-      <div className="flex items-center gap-1 border-b border-zinc-200 px-2 py-1.5 dark:border-zinc-700">
+      <div className="flex items-center gap-1 border-b border-zinc-200 px-2 py-2 dark:border-zinc-700">
         <Button
           variant="ghost"
           size="sm"
