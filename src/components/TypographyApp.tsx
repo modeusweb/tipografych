@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { AboutSection } from "@/components/AboutSection";
 import { SourcePanel } from "@/components/editor/SourcePanel";
 import { ResultPanel } from "@/components/result/ResultPanel";
 import { SettingsDrawer } from "@/components/settings/SettingsDrawer";
@@ -325,6 +326,8 @@ export function TypographyApp() {
         </div>
 
       </main>
+
+      <AboutSection />
 
       <Footer />
 

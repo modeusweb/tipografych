@@ -40,17 +40,14 @@ export function Header({ onOpenSettings, onOpenHelp, theme, onThemeChange }: Hea
     <header className="border-b border-zinc-200 dark:border-zinc-800">
       <div className="mx-auto flex w-full items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <div className="min-w-0">
-          <div className="flex items-baseline gap-2.5">
-            <h1 className="bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-500 bg-clip-text text-2xl font-bold tracking-tight text-transparent sm:text-3xl dark:from-indigo-400 dark:to-violet-400">
+          <h1 className="flex flex-wrap items-baseline gap-x-2 text-2xl font-bold tracking-tight sm:text-3xl">
+            <span className="bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-500 bg-clip-text text-transparent dark:from-indigo-400 dark:to-violet-400">
               Типографыч
-            </h1>
-            <span
-              aria-hidden="true"
-              className="hidden select-none text-sm text-zinc-400 sm:inline dark:text-zinc-600"
-            >
-              «Он сказал — „Привет“…»
             </span>
-          </div>
+            <span className="text-sm font-semibold text-zinc-500 sm:text-lg dark:text-zinc-400">
+              — типографика русского текста онлайн
+            </span>
+          </h1>
           <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">
             Приведите русский текст к нормам типографики
           </p>
