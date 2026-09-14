@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { AboutSection } from "@/components/AboutSection";
+import { AboutDialog } from "@/components/AboutDialog";
 import { SourcePanel } from "@/components/editor/SourcePanel";
 import { ResultPanel } from "@/components/result/ResultPanel";
 import { SettingsDrawer } from "@/components/settings/SettingsDrawer";
@@ -90,6 +90,7 @@ export function TypographyApp() {
   const { settings, update, applyPreset, enableRule, resetToPreset } = useSettings();
 
   const [input, setInput] = useState("");
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [result, setResult] = useState<TypographResult | null>(null);
   const [processedFrom, setProcessedFrom] = useState("");
   const [status, setStatus] = useState<Status>("idle");
@@ -238,6 +239,7 @@ export function TypographyApp() {
       <Header
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenHelp={() => setHelpOpen(true)}
+        onOpenAbout={() => setAboutOpen(true)}
         theme={theme}
         onThemeChange={setTheme}
       />
@@ -327,8 +329,6 @@ export function TypographyApp() {
 
       </main>
 
-      <AboutSection />
-
       <Footer />
 
       <SettingsDrawer
@@ -343,6 +343,7 @@ export function TypographyApp() {
         onReset={resetToPreset}
       />
       <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
     </div>
   );
 }

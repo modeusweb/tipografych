@@ -6,6 +6,7 @@ import {
   QuestionMarkCircleIcon,
   SunIcon,
   ComputerDesktopIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/Button";
 import type { ThemePreference } from "@/hooks/useTheme";
@@ -13,6 +14,7 @@ import type { ThemePreference } from "@/hooks/useTheme";
 export interface HeaderProps {
   onOpenSettings: () => void;
   onOpenHelp: () => void;
+  onOpenAbout: () => void;
   theme: ThemePreference;
   onThemeChange: (theme: ThemePreference) => void;
 }
@@ -35,7 +37,7 @@ function ThemeIcon({ theme }: { theme: ThemePreference }) {
   return <ComputerDesktopIcon className="h-5 w-5" aria-hidden="true" />;
 }
 
-export function Header({ onOpenSettings, onOpenHelp, theme, onThemeChange }: HeaderProps) {
+export function Header({ onOpenSettings, onOpenHelp, onOpenAbout, theme, onThemeChange }: HeaderProps) {
   return (
     <header className="border-b border-zinc-200 dark:border-zinc-800">
       <div className="mx-auto flex w-full items-center justify-between gap-4 px-4 py-4 sm:px-6">
@@ -66,6 +68,10 @@ export function Header({ onOpenSettings, onOpenHelp, theme, onThemeChange }: Hea
           <Button variant="ghost" size="sm" onClick={onOpenHelp}>
             <QuestionMarkCircleIcon className="h-5 w-5" aria-hidden="true" />
             <span className="hidden sm:inline">Справка</span>
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onOpenAbout}>
+            <InformationCircleIcon className="h-5 w-5" aria-hidden="true" />
+            <span className="hidden sm:inline">О сервисе</span>
           </Button>
           <Button variant="ghost" size="sm" onClick={onOpenSettings}>
             <Cog6ToothIcon className="h-5 w-5" aria-hidden="true" />

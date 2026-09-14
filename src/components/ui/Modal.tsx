@@ -11,10 +11,15 @@ export interface ModalProps {
   children: ReactNode;
   /** Максимальная ширина панели. */
   wide?: boolean;
+  /**
+   * Не выгружать контент из DOM в закрытом состоянии (скрывается через
+   * display:none + inert). Нужно для SEO: текст остаётся в SSR-HTML.
+   */
+  keepMounted?: boolean;
 }
 
 /** Модальное окно: Esc, клик по подложке, блокировка прокрутки фона. */
-export function Modal({ open, onClose, title, children, wide }: ModalProps) {
+export function Modal({ open, onClose, title, children, wide, keepMounted }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,7 +37,7 @@ export function Modal({ open, onClose, title, children, wide }: ModalProps) {
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open && !keepMounted) return null;
 
   return (
     <div
@@ -40,6 +45,9 @@ export function Modal({ open, onClose, title, children, wide }: ModalProps) {
       role="dialog"
       aria-modal="true"
       aria-label={title}
+      aria-hidden={!open || undefined}
+      inert={!open || undefined}
+      style={{ display: open ? undefined : "none" }}
     >
       <div
         className="cursor-pointer absolute inset-0 bg-zinc-950/40 backdrop-blur-[2px]"

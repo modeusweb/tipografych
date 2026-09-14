@@ -125,7 +125,7 @@ export function SourcePanel({
         readFile(file);
       }}
     >
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-zinc-200 px-3 py-2 dark:border-zinc-700">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-zinc-200 px-3 py-3.5 dark:border-zinc-700">
         <h2
           id="source-text-label"
           className="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
