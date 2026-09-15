@@ -48,6 +48,26 @@ export const spaceBeforePunctRule: TypographyRule = {
   },
 };
 
+export const timeFormatRule: TypographyRule = {
+  id: "time-format",
+  name: "Время",
+  description:
+    "Склеивает время в формате ЧЧ:ММ («15 : 30» → «15:30»): внутри времени пробелов быть не должно.",
+  category: "punctuation",
+  enabledByDefault: true,
+  apply(text, ctx) {
+    return applyRegex(
+      ctx,
+      timeFormatRule,
+      text,
+      // Часы 0–23, минуты 00–59. Слово-граница не даёт цепляться за хвост
+      // больших чисел («115: 30» не время). Идемпотентно: замена совпадает.
+      /\b([01]?\d|2[0-3])[ \t\u00A0]*:[ \t\u00A0]*([0-5]\d)(?!\d)/gu,
+      (m) => `${m[1]}:${m[2]}`,
+    );
+  },
+};
+
 export const spaceAfterPunctRule: TypographyRule = {
   id: "space-after-punct",
   name: "Пробелы после знаков",

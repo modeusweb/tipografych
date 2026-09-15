@@ -6,7 +6,7 @@ import { mergePointChanges, type PointChange } from "./helpers";
  *
  * Stateful-алгоритм (не «заменить все " на »»): сканирует текст,
  * отслеживает вложенность и решает для каждой кавычки, открывающая
- * она или закрывающая, по контексту предыдущего символа.
+ * она или закрывающая, по контексту предыдущего И следующего символа.
  *
  *  - `"` и английские “ ” → «ёлочки»;
  *  - кавычки внутри кавычек → „лапки“;
@@ -28,10 +28,10 @@ export const quotesRussianRule: TypographyRule = {
   apply(text, ctx) {
     const changes: PointChange[] = [];
     let depth = 0;
+    // Глубина только прямых кавычек ("). Нужна для двусмысленных случаев:
+    // «слово " слово» может быть и открытием, и закрытием.
+    let depthStraight = 0;
     let out = "";
-
-    const isProbablyOpening = (prev: string): boolean =>
-      prev === "" || /[\s([{«„‹—–-]/.test(prev);
 
     for (let i = 0; i < text.length; i++) {
       const ch = text[i];
@@ -97,24 +97,35 @@ export const quotesRussianRule: TypographyRule = {
       }
       if (ch === '"') {
         const prev = i > 0 ? text[i - 1] : "";
-        if (isProbablyOpening(prev)) {
-          out += depth === 0 ? "\u00AB" : "\u201E";
-          changes.push({
-            index: i,
-            before: ch,
-            after: depth === 0 ? "\u00AB" : "\u201E",
-          });
+        const next = i + 1 < text.length ? text[i + 1] : "";
+        const prevIsBoundary =
+          prev === "" || /[\s\u00A0([{«„‹—–-]/.test(prev);
+        const nextIsBoundary =
+          next === "" || /[\s\u00A0.,;:!?…)\]}»“”]/.test(next);
+        // Двусмысленный случай: пробел (или граница) стоит И до, И после
+        // кавычки («году " ." ). Закрывающая кавычка тоже пишется после
+        // пробела, поэтому решаем по глубине открытых прямых кавычек:
+        // есть открытая — это её закрывающая пара.
+        const treatAsClosing =
+          prevIsBoundary && nextIsBoundary ? depthStraight > 0 : !prevIsBoundary;
+        if (!treatAsClosing) {
+          const openChar = depth === 0 ? "\u00AB" : "\u201E";
+          out += openChar;
+          changes.push({ index: i, before: ch, after: openChar });
           depth += 1;
+          depthStraight += 1;
         } else if (depth === 0) {
           out += ch; // закрывающая без пары — консервативно оставляем
         } else if (depth === 1) {
           out += "\u00BB";
           changes.push({ index: i, before: ch, after: "\u00BB" });
           depth = 0;
+          depthStraight = Math.max(0, depthStraight - 1);
         } else {
           out += "\u201C";
           changes.push({ index: i, before: ch, after: "\u201C" });
           depth -= 1;
+          depthStraight = Math.max(0, depthStraight - 1);
         }
         continue;
       }

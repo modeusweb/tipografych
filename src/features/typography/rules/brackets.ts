@@ -8,6 +8,26 @@ import { applyRegex } from "./helpers";
  *  - убирает пробелы сразу после открывающих и перед закрывающими «» „“.
  * Содержимое защищённых фрагментов (код, HTML) недоступно правилу.
  */
+export const spaceBeforeBracketRule: TypographyRule = {
+  id: "space-before-bracket",
+  name: "Пробел перед скобкой",
+  description:
+    "Ставит пробел перед открывающей скобкой, если буква слиплась с ней («команда(состоящая» → «команда (состоящая»). Латинские вызовы вида «f(x)» не трогаются.",
+  category: "brackets",
+  enabledByDefault: true,
+  apply(text, ctx) {
+    return applyRegex(
+      ctx,
+      spaceBeforeBracketRule,
+      text,
+      // Только кириллица перед скобкой: латинские конструкции вида «f(x)»
+      // и записи вида «5(шт)» не трогаем. Скобка должна иметь содержимое.
+      /(?<=[А-ЯЁа-яё])\((?=[^\s)])/gu,
+      () => " (",
+    );
+  },
+};
+
 export const bracketsSpacesRule: TypographyRule = {
   id: "brackets-spaces",
   name: "Пробелы внутри скобок и кавычек",

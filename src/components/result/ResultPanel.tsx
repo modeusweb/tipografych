@@ -306,7 +306,7 @@ function ResultText({
       role="document"
       aria-label="Обработанный текст"
       tabIndex={0}
-      className="min-h-0 flex-1 overflow-y-auto px-4 py-3 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+      className="min-h-0 flex-1 overflow-y-auto px-4 py-4 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
     >
       <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed text-zinc-800 dark:text-zinc-200">
         {text}
@@ -319,7 +319,7 @@ function ResultText({
 function StatsBar({ result }: { result: TypographResult }) {
   const { statistics } = result;
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-zinc-200 px-3 py-2 text-xs dark:border-zinc-700">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-zinc-200 px-3 py-3.5 text-xs dark:border-zinc-700">
       <span className="font-medium text-indigo-700 dark:text-indigo-300">
         {changesLabel(statistics.totalChanges)}
       </span>

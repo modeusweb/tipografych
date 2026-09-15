@@ -1,9 +1,9 @@
 ﻿import type { RuleCategory, TypographyRule } from "../types";
 import { quotesRussianRule } from "./quotes";
 import { ellipsisRule } from "./ellipsis";
-import { spaceAfterPunctRule, spaceBeforePunctRule } from "./punctuation";
+import { spaceAfterPunctRule, spaceBeforePunctRule, timeFormatRule } from "./punctuation";
 import { dashRangesRule, dashSentenceRule } from "./dashes";
-import { bracketsSpacesRule } from "./brackets";
+import { bracketsSpacesRule, spaceBeforeBracketRule } from "./brackets";
 import { percentSpacingRule } from "./percent";
 import { temperatureRule, unitsSpacingRule } from "./units";
 import { numbersThousandsRule } from "./numbers";
@@ -55,10 +55,9 @@ export const TYPOGRAPHY_RULES: readonly TypographyRule[] = [
   quotesRussianRule,
   ellipsisRule,
   spaceBeforePunctRule,
-  spaceAfterPunctRule,
+  spaceAfterPunctRule, timeFormatRule,
   dashSentenceRule,
-  dashRangesRule,
-  bracketsSpacesRule,
+  dashRangesRule, bracketsSpacesRule, spaceBeforeBracketRule,
   percentSpacingRule,
   temperatureRule,
   unitsSpacingRule,
