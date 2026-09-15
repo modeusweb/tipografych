@@ -12,8 +12,6 @@
 # debug output
 debug-output*.txt
 
-# local tooling
-
 # testing
 /coverage
 
@@ -47,8 +45,7 @@ next-env.d.ts
 next-env.d.ts
 
 # local tooling
-scripts/*
-!scripts/generate-og-image.mjs
+scripts/
 .vscode/
 .idea/
 
