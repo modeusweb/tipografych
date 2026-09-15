@@ -84,14 +84,13 @@ export const quotesRussianRule: TypographyRule = {
           out += open;
           stack.push(open);
         } else {
+          // Закрывающая кавычка нормализуется под парную открытую:
+          // «…“» → «…» (иначе при нормализации „…“ получился бы разнобой
+          // «лапки“: открывающая стала ёлочкой, а закрывающая осталась).
           const popped = stack.pop()!;
-          if (popped === "\u00AB") {
-            out += ch; // «ельочку» закрыли «английской» — не нормализуем
-          } else {
-            const close = closeQuoteForOpen(popped);
-            if (close !== ch) changes.push({ index: i, before: ch, after: close });
-            out += close;
-          }
+          const close = closeQuoteForOpen(popped);
+          if (close !== ch) changes.push({ index: i, before: ch, after: close });
+          out += close;
         }
         continue;
       }
