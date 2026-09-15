@@ -2,7 +2,6 @@ import { TYPOGRAPHY_CONFIG } from "./config";
 import { protectFragments } from "./protection";
 import { TYPOGRAPHY_RULES, getRuleById } from "./rules";
 import { DEFAULT_PROTECTION } from "./presets";
-import { phoneFormatRule } from "./rules/phones";
 import {
   type ChangeSample,
   type CategoryStat,
@@ -24,10 +23,11 @@ import {
  *
  * Этапы (порядок правил см. в rules/index.ts):
  *   1. нормализация (переводы строк, вырезание приватных символов);
- *   2. защита фрагментов (protected tokens);
- *   3. применение правил в фиксированном порядке;
- *   4. восстановление защищённых фрагментов;
- *   5. статистика и примеры изменений.
+ *   2. предварительная обработка правилами с флагом `runBeforeProtection`;
+ *   3. защита фрагментов (protected tokens);
+ *   4. применение правил в фиксированном порядке;
+ *   5. восстановление защищённых фрагментов;
+ *   6. статистика и примеры изменений.
  *
  * Функция чистая и детерминированная: одинаковые вход и настройки
  * всегда дают одинаковый результат (идемпотентность покрыта тестами).
@@ -127,10 +127,12 @@ export function typograph(text: string, options: TypographyOptions): TypographRe
   // 1. Нормализация.
   const normalized = text.replace(/\r\n?/g, "\n").replace(PUA_CHARS, "");
 
-  // 2. Предварительная обработка (до защиты фрагментов):
-  //     форматирование телефонов — protection защищает телефоны,
-  //     поэтому phone-format должен отработать ДО неё.
-  //     Используем временный ctx без записи изменений (телефон потом будет защищён).
+  // 2. Предварительная обработка (до защиты фрагментов).
+  //     Правила с флагом `runBeforeProtection` должны видеть «сырые»
+  //     фрагменты: protection заменяет телефоны и даты маркерами, поэтому
+  //     phone-format и year-abbr обязаны отработать ДО неё.
+  //     Изменения пишутся в отдельный агрегатор (защищённый фрагмент в
+  //     статистике остаётся «сырым» текстом).
   const preAggregator = new ChangeAggregator();
   const preCtx: RuleContext = {
     options,
@@ -138,8 +140,9 @@ export function typograph(text: string, options: TypographyOptions): TypographRe
       preAggregator.record(ruleId, category, before, after, count),
   };
   let preprocessed = normalized;
-  if (enabled.has("phone-format")) {
-    preprocessed = phoneFormatRule.apply(preprocessed, preCtx);
+  for (const rule of TYPOGRAPHY_RULES) {
+    if (!rule.runBeforeProtection || !enabled.has(rule.id)) continue;
+    preprocessed = rule.apply(preprocessed, preCtx);
   }
 
   // 3. Защита фрагментов.
@@ -155,8 +158,8 @@ export function typograph(text: string, options: TypographyOptions): TypographRe
   let working = guarded.text;
   for (const rule of TYPOGRAPHY_RULES) {
     if (!enabled.has(rule.id)) continue;
-    // phone-format уже отработал на этапе предварительной обработки.
-    if (rule.id === "phone-format") continue;
+    // Правила предварительной обработки уже отработали до защиты фрагментов.
+    if (rule.runBeforeProtection) continue;
     working = rule.apply(working, ctx);
   }
 

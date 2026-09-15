@@ -9,8 +9,8 @@ import { applyRegex } from "./helpers";
  *   «+7(999)123-45-67» → «+7 (999) 123-45-67»
  *   «8(999)1234567» → «8 (999) 123-45-67»
  *
- * Правило выполняется ДО защиты фрагментов (см. pipeline), после чего
- * номер защищается токеном — остальные правила его не трогают.
+ * Правило выполняется ДО защиты фрагментов (`runBeforeProtection`),
+ * после чего номер защищается токеном — остальные правила его не трогают.
  */
 export const phoneFormatRule: TypographyRule = {
   id: "phone-format",
@@ -19,6 +19,7 @@ export const phoneFormatRule: TypographyRule = {
     "Приводит телефонные номера к виду «+7 (999) 123-45-67»: убирает пробелы внутри скобок и вокруг дефисов, добавляет пробел после кода страны.",
   category: "spaces",
   enabledByDefault: true,
+  runBeforeProtection: true,
   apply(text, ctx) {
     // Вариант с дефисами и произвольными пробелами.
     const dashed =

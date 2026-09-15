@@ -12,6 +12,7 @@ export type RuleCategory =
   | "punctuation"
   | "spaces"
   | "brackets"
+  | "symbols"
   | "nbsp"
   | "numbers"
   | "units"
@@ -113,6 +114,15 @@ export interface TypographyRule {
   category: RuleCategory;
   /** Включено ли правило по умолчанию в пресете. */
   enabledByDefault: boolean;
+  /**
+   * Выполнять правило до защиты фрагментов («protected tokens»).
+   *
+   * Нужно правилам, которые должны видеть «сырые» фрагменты: телефоны,
+   * даты, IP-адреса и т. п. — protection заменяет их маркерами, и после
+   * этого контекст (например, «01.01.2026г.») уже недоступен.
+   * Такие правила не выполняются в общем проходе.
+   */
+  runBeforeProtection?: boolean;
   /**
    * Функция правила в конвейере. Чистая функция: не изменяет `text`,
    * регистрирует изменения через `ctx.record` и возвращает новый текст.

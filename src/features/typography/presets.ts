@@ -26,6 +26,7 @@ export const DEFAULT_PROTECTION: ProtectionOptions = {
 const MINIMAL_RULES: readonly string[] = [
   "spaces-multiple",
   "spaces-edges",
+  "empty-lines",
   "brackets-spaces",
   "quotes-russian",
   "ellipsis",
@@ -33,6 +34,7 @@ const MINIMAL_RULES: readonly string[] = [
   "space-after-punct",
   "dash-sentence",
   "dash-ranges",
+  "minus-sign",
 ];
 
 export const PRESETS: readonly TypographyPreset[] = [
