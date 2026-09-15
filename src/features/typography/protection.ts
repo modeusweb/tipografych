@@ -191,9 +191,35 @@ const VERSION: Scanner = {
   pattern: /\b(?:v|ver\.?)[ \t]?\d+(?:\.\d+)+|(?<![\d.])\d+(?:\.\d+){2,}(?![\d.])/gi,
 };
 
+/**
+ * Расширения файлов — общий список для FILE (имя + расширение) и
+ * BARE_EXTENSION (расширение без имени). Включает форматы документов,
+ * изображений (в том числе дизайн: psd, fig, sketch, xd), медиа и кода.
+ */
+const FILE_EXTENSIONS =
+  "txt|text|md|markdown|json|jsonc|csv|tsv|pdf|doc|docx|xls|xlsx|ppt|pptx|" +
+  "ts|tsx|js|jsx|mjs|cjs|py|rb|go|rs|java|c|cpp|h|hpp|cs|php|html?|htm|" +
+  "css|scss|xml|svg|yml|yaml|toml|ini|log|" +
+  "zip|rar|7z|tar|gz|" +
+  "png|jpe?g|gif|webp|psd|psb|ai|fig|sketch|xd|cdr|indd|tiff?|bmp|eps|ico|" +
+  "mp3|mp4|avi|mov|wav|" +
+  "sql|sh|bat|env|lock|exe|dll|" +
+  "rtf|odt|ods|odp|epub|fb2";
+
 const FILE: Scanner = {
-  pattern:
-    /(?<![\w@/-])[a-zа-яё0-9][\wа-яё.-]*\.(?:txt|text|md|markdown|json|jsonc|csv|tsv|pdf|doc|docx|xls|xlsx|ppt|pptx|ts|tsx|js|jsx|mjs|cjs|py|rb|go|rs|java|c|cpp|h|hpp|cs|php|html?|htm|css|scss|xml|svg|yml|yaml|toml|ini|log|zip|rar|7z|tar|gz|png|jpe?g|gif|webp|mp3|mp4|avi|mov|wav|sql|sh|bat|env|lock)\b/gi,
+  pattern: new RegExp(
+    "(?<![\\w@/-])[a-zа-яё0-9][\\wа-яё.-]*\\.(?:" + FILE_EXTENSIONS + ")\\b",
+    "gi",
+  ),
+};
+
+/**
+ * Расширение без имени файла: «в формате .psd или .fig». Точка здесь —
+ * часть обозначения расширения, а не конец предложения; без защиты
+ * правила пробелов превратили бы «.psd» в «. psd».
+ */
+const BARE_EXTENSION: Scanner = {
+  pattern: new RegExp("(?<![\\w@/.-])\\.(?:" + FILE_EXTENSIONS + ")\\b", "gi"),
 };
 
 const CLI_FLAG: Scanner = {
@@ -251,6 +277,7 @@ export function protectFragments(
   working = runScanner(working, IP, fragments);
   working = runScanner(working, VERSION, fragments);
   working = runScanner(working, FILE, fragments);
+  working = runScanner(working, BARE_EXTENSION, fragments);
   working = runScanner(working, CLI_FLAG, fragments);
 
   return {

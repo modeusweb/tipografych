@@ -1,5 +1,5 @@
 import type { TypographyRule } from "../types";
-import { mergePointChanges, type PointChange } from "./helpers";
+import { applyRegex, mergePointChanges, type PointChange } from "./helpers";
 
 /**
  * Русские кавычки.
@@ -159,6 +159,32 @@ export const quotesRussianRule: TypographyRule = {
 
     mergePointChanges(changes, ctx, quotesRussianRule);
     return out;
+  },
+};
+
+/**
+ * Лишняя точка после закрывающей кавычки.
+ *
+ * Если цитата завершается точкой, «?», «!» или многоточием, точка
+ * после закрывающей кавычки не ставится: «…дней…». → «…дней…».
+ * Если знака внутри нет, цитата — часть предложения, и точка после
+ * кавычки остаётся: «Мы должны всё сделать».
+ */
+export const quotesTerminalDotRule: TypographyRule = {
+  id: "quotes-terminal-dot",
+  name: "Точка после закрывающей кавычки",
+  description:
+    "Убирает точку после закрывающей кавычки, если цитата уже завершается точкой, «?», «!» или многоточием («…дней…». → «…дней…»).",
+  category: "quotes",
+  enabledByDefault: true,
+  apply(text, ctx) {
+    return applyRegex(
+      ctx,
+      quotesTerminalDotRule,
+      text,
+      /([.!?…])[ \t]*([\u00BB\u201C\u201D])[ \t]*\.(?=\s|$)/gu,
+      (m) => `${m[1]}${m[2]}`,
+    );
   },
 };
 

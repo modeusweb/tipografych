@@ -72,7 +72,7 @@ export const spaceAfterPunctRule: TypographyRule = {
   id: "space-after-punct",
   name: "Пробелы после знаков",
   description:
-    "Добавляет отсутствующий пробел после знака препинания («Привет,мир» → «Привет, мир»). Десятичные дроби и сокращения вида «кв.м.» не трогаются.",
+    "Добавляет отсутствующий пробел после знака препинания («Привет,мир» → «Привет, мир»). Десятичные дроби, сокращения вида «кв.м.» и «т.е.» не разрываются: внутри двухбуквенных сокращений ставится неразрывный пробел.",
   category: "punctuation",
   enabledByDefault: true,
   apply(text, ctx) {
@@ -114,6 +114,18 @@ export const spaceAfterPunctRule: TypographyRule = {
           const beforeDot1 = m.index >= 1 ? text.charAt(m.index - 1) : "";
           if (/^[a-z]$/i.test(beforeDot1) && /^[a-z]$/i.test(nextLetter)) {
             return punct;
+          }
+          // Русские двухбуквенные сокращения «т.е.», «т.к.», «з.п.» и
+          // «г.Москва»: точка между одиночной буквой и следующей буквой —
+          // часть сокращения, при переносе строки его части не должны
+          // отрываться друг от друга, поэтому ставим неразрывный пробел.
+          const beforeDot2 = m.index >= 2 ? text.charAt(m.index - 2) : "";
+          if (
+            /[а-яё]/.test(nextLetter) &&
+            /^[а-яё]$/.test(beforeDot1) &&
+            !/[\p{L}\p{N}]/u.test(beforeDot2)
+          ) {
+            return punct + "\u00A0";
           }
         }
         return punct + " ";

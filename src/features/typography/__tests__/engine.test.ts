@@ -95,6 +95,16 @@ describe("Защита фрагментов", () => {
     expect(t("Файлы my-file.txt в папке.")).toContain("my-file.txt");
   });
 
+  it("голые расширения файлов не разбиваются", () => {
+    const result = t("Макеты в формате .psd или .fig, а также .sketch лежат рядом.");
+    expect(result).toContain(".psd");
+    expect(result).toContain(".fig");
+    expect(result).toContain(".sketch");
+    expect(result).not.toContain(". psd");
+    expect(result).not.toContain(". fig");
+    expect(result).not.toContain(". sketch");
+  });
+
   it("флаги CLI не ломаются", () => {
     expect(t("Запуск с --flag работает.")).toContain("--flag");
   });
