@@ -2,7 +2,7 @@
 import { quotesRussianRule, quotesTerminalDotRule } from "./quotes";
 import { ellipsisRule } from "./ellipsis";
 import { spaceAfterPunctRule, spaceBeforePunctRule, timeFormatRule } from "./punctuation";
-import { legalSymbolsRule, plusMinusRule, superscriptRule } from "./symbols";
+import { legalSymbolsRule, plusMinusRule, comparisonSignsRule, superscriptRule } from "./symbols";
 import { fractionsRule } from "./fractions";
 import { multiplicationRule } from "./multiplication";
 import { arrowsRule } from "./arrows";
@@ -54,30 +54,31 @@ export { UNITS } from "./units";
  * 14.  fractions          дроби («1/2» и «1 / 2» → «½»)
  * 15.  multiplication     знак умножения («5х5», «3 x 10» → «5×5», «3×10»)
  * 16.  superscript        степени («10^8» → «10⁸»; после multiplication)
- * 17.  arrows             стрелки («->» → «→», до правил тире)
- * 18.  percent-spacing    проценты
- * 19.  temperature        температура и градусы
- * 20.  units-spacing      пробел между числом и единицей
- * 21.  currency-sign-glue «$ 100» → «$100» (до currency-spacing)
- * 22.  currency-spacing   отбивка знаков валют («5000000$» → «5000000 $»; выключено по умолчанию, только в «Издательской»)
- * 23.  currency-rubles    «90руб.» → «90 ₽» (после пробелов у пунктуации)
- * 24.  currency-abbreviations «100долл.» → «100 долл.»
- * 25.  currency-sign-position «$100» → «100 $» (только в «Издательской»)
- * 26.  numbers-thousands  разделители разрядов
- * 27.  spaces-multiple    двойные пробелы (до NBSP-правил)
- * 28.  spaces-edges       пробелы в начале/конце строк
- * 29.  empty-lines        лишние пустые строки (после spaces-edges)
- * 30.  name-capitalization заглавные буквы в именах (до nbsp-initials)
- * 31.  nbsp-prepositions  неразрывные пробелы: предлоги
- * 32.  nbsp-initials      неразрывные пробелы: инициалы
- * 33.  nbsp-symbols       неразрывные пробелы: № и §
- * 34.  nbsp-units         неразрывные пробелы: единицы измерения
- * 35.  phone-format       форматирование телефонов
- * 36.  abbreviations      пробелы после сокращений
- * 37.  city-abbr          сокращение «г.» перед городом
- * 38.  year-abbr          сокращение года («2026г.» → «2026 г.»)
- * 39.  number-abbreviations числовые сокращения (млрд, млн)
- * 40.  room-number        знак номера (N312 → № 312)
+ * 17.  arrows             стрелки («->», «=>» → «→», «⇒»; до правил тире)
+ * 18.  comparison-signs   знаки сравнения («x >= y» → «x ≥ y»; после arrows)
+ * 19.  percent-spacing    проценты
+ * 20.  temperature        температура и градусы
+ * 21.  units-spacing      пробел между числом и единицей
+ * 22.  currency-sign-glue «$ 100» → «$100» (до currency-spacing)
+ * 23.  currency-spacing   отбивка знаков валют («5000000$» → «5000000 $»; выключено по умолчанию, только в «Издательской»)
+ * 24.  currency-rubles    «90руб.» → «90 ₽» (после пробелов у пунктуации)
+ * 25.  currency-abbreviations «100долл.» → «100 долл.»
+ * 26.  currency-sign-position «$100» → «100 $» (только в «Издательской»)
+ * 27.  numbers-thousands  разделители разрядов
+ * 28.  spaces-multiple    двойные пробелы (до NBSP-правил)
+ * 29.  spaces-edges       пробелы в начале/конце строк
+ * 30.  empty-lines        лишние пустые строки (после spaces-edges)
+ * 31.  name-capitalization заглавные буквы в именах (до nbsp-initials)
+ * 32.  nbsp-prepositions  неразрывные пробелы: предлоги
+ * 33.  nbsp-initials      неразрывные пробелы: инициалы
+ * 34.  nbsp-symbols       неразрывные пробелы: № и §
+ * 35.  nbsp-units         неразрывные пробелы: единицы измерения
+ * 36.  phone-format       форматирование телефонов
+ * 37.  abbreviations      пробелы после сокращений
+ * 38.  city-abbr          сокращение «г.» перед городом
+ * 39.  year-abbr          сокращение года («2026г.» → «2026 г.»)
+ * 40.  number-abbreviations числовые сокращения (млрд, млн)
+ * 41.  room-number        знак номера (N312 → № 312)
  *
  * Правила с флагом `runBeforeProtection` (phone-format, year-abbr)
  * выполняются раньше остальных — до того, как protection заменит
@@ -99,6 +100,7 @@ export const TYPOGRAPHY_RULES: readonly TypographyRule[] = [
   multiplicationRule,
   superscriptRule,
   arrowsRule,
+  comparisonSignsRule,
   percentSpacingRule,
   temperatureRule,
   unitsSpacingRule,

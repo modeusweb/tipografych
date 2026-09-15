@@ -9,8 +9,9 @@ import { applyRegex, mergePointChanges, type PointChange } from "./helpers";
  * она или закрывающая, по контексту предыдущего И следующего символа.
  *
  *  - `"` и английские “ ” → «ёлочки»;
- *  - кавычки внутри кавычек → „лапки“ (в том числе английские “ ”,
- *    стоящие внутри «ёлочек»: «еще одни “слова”» → «еще одни „слова“»);
+ *  - кавычки внутри кавычек → „лапки“, третий уровень вложенности →
+ *    одинарные ‚марчуковские‘ лапки (в том числе английские “ ” внутри
+ *    «ёлочек»: «еще одни “слова”» → «еще одни „слова“»);
  *  - уже существующие «» и „“ нормализуются по вложенности;
  *  - апострофы (') не трогаются;
  *  - несбалансированные закрывающие кавычки остаются как есть
@@ -28,7 +29,9 @@ export const quotesRussianRule: TypographyRule = {
   enabledByDefault: true,
   apply(text, ctx) {
     const changes: PointChange[] = [];
-    let depth = 0;
+    // Стек открытых кавычек: « → „ → ‚ — третий уровень вложенности
+    // закрывается одинарными „марчуковскими“ лапками (‚…‘).
+    const stack: string[] = [];
     // Глубина только прямых кавычек ("). Нужна для двусмысленных случаев:
     // «слово " слово» может быть и открытием, и закрытием.
     let depthStraight = 0;
@@ -38,68 +41,69 @@ export const quotesRussianRule: TypographyRule = {
       const ch = text[i];
 
       if (ch === "\u00AB") {
-        // « — открывающая ёлочка
-        // Если уже внутри кавычек, заменяем на „лапки“ для вложенности
-        if (depth > 0) {
-          out += "\u201E";
-          changes.push({ index: i, before: ch, after: "\u201E" });
-        } else {
-          out += ch;
-        }
-        depth += 1;
+        // « — открывающая ёлочка; внутри других кавычек становится
+        // вложенной („ или ‚) по уровню вложенности.
+        const open = openQuoteForDepth(stack.length);
+        if (open !== ch) changes.push({ index: i, before: ch, after: open });
+        out += open;
+        stack.push(open);
         continue;
       }
       if (ch === "\u201E") {
-        // „ — открывающая лапка
-        depth += 1;
-        out += ch;
+        // „ — уже набранная открывающая лапка: нормализуем по уровню.
+        const open = openQuoteForDepth(stack.length);
+        if (open !== ch) changes.push({ index: i, before: ch, after: open });
+        out += open;
+        stack.push(open);
         continue;
       }
       if (ch === "\u00BB") {
-        // » — закрывающая ёлочка
-        if (depth > 0) depth -= 1;
-        // Если закрываем вложенную кавычку (depth был > 1), используем "лапки"
-        if (depth > 0) {
-          out += "\u201C";
-          changes.push({ index: i, before: ch, after: "\u201C" });
+        // » — закрывающая ёлочка: закрывает самую внешнюю открытую кавычку.
+        if (stack.length === 0) {
+          out += ch; // закрывающая без пары — консервативно оставляем
         } else {
-          out += ch;
+          const close = closeQuoteForOpen(stack.pop()!);
+          if (close !== ch) changes.push({ index: i, before: ch, after: close });
+          out += close;
         }
         continue;
       }
       if (ch === "\u201C") {
         // “ — английская открывающая и одновременно русская закрывающая
-        // „лапка“. Трактуем по контексту: на нулевом уровне это открывающая
-        // английская кавычка (→ «), внутри «ёлочек» — либо открывающая
-        // вложенная (после пробела и перед словом → „), либо закрывающая
+        // „лапка“. Трактуем по контексту: на верхнем уровне это открывающая
+        // английская кавычка (→ «), внутри кавычек — либо открывающая
+        // вложенная (после пробела и перед словом), либо закрывающая
         // уже открытой вложенной кавычки.
-        if (depth === 0) {
-          out += "\u00AB";
+        if (stack.length === 0) {
           changes.push({ index: i, before: ch, after: "\u00AB" });
-          depth = 1;
+          out += "\u00AB";
+          stack.push("\u00AB");
         } else if (isNestedOpeningQuote(text, i)) {
-          out += "\u201E";
-          changes.push({ index: i, before: ch, after: "\u201E" });
-          depth += 1;
+          const open = openQuoteForDepth(stack.length);
+          changes.push({ index: i, before: ch, after: open });
+          out += open;
+          stack.push(open);
         } else {
-          out += ch;
-          depth -= 1;
+          const popped = stack.pop()!;
+          if (popped === "\u00AB") {
+            out += ch; // «ельочку» закрыли «английской» — не нормализуем
+          } else {
+            const close = closeQuoteForOpen(popped);
+            if (close !== ch) changes.push({ index: i, before: ch, after: close });
+            out += close;
+          }
         }
         continue;
       }
       if (ch === "\u201D") {
-        // ” — английская закрывающая. На верхнем уровне → », внутри
-        // вложенной кавычки нормализуется в русскую закрывающую „…“.
-        if (depth === 0) {
+        // ” — английская закрывающая. На верхнем уровне не трогается,
+        // внутри закрывает парную открытую кавычку.
+        if (stack.length === 0) {
           out += ch; // несбалансированная — не трогаем
-        } else if (depth === 1) {
-          out += "\u00BB";
-          changes.push({ index: i, before: ch, after: "\u00BB" });
-          depth = 0;
         } else {
-          out += "\u201C";
-          changes.push({ index: i, before: ch, after: "\u201C" });
-          depth -= 1;
+          const close = closeQuoteForOpen(stack.pop()!);
+          changes.push({ index: i, before: ch, after: close });
+          out += close;
         }
         continue;
       }
@@ -121,22 +125,17 @@ export const quotesRussianRule: TypographyRule = {
               : depthStraight > 0
             : !prevIsBoundary;
         if (!treatAsClosing) {
-          const openChar = depth === 0 ? "\u00AB" : "\u201E";
-          out += openChar;
-          changes.push({ index: i, before: ch, after: openChar });
-          depth += 1;
+          const open = openQuoteForDepth(stack.length);
+          out += open;
+          changes.push({ index: i, before: ch, after: open });
+          stack.push(open);
           depthStraight += 1;
-        } else if (depth === 0) {
+        } else if (stack.length === 0) {
           out += ch; // закрывающая без пары — консервативно оставляем
-        } else if (depth === 1) {
-          out += "\u00BB";
-          changes.push({ index: i, before: ch, after: "\u00BB" });
-          depth = 0;
-          depthStraight = Math.max(0, depthStraight - 1);
         } else {
-          out += "\u201C";
-          changes.push({ index: i, before: ch, after: "\u201C" });
-          depth -= 1;
+          const close = closeQuoteForOpen(stack.pop()!);
+          out += close;
+          changes.push({ index: i, before: ch, after: close });
           depthStraight = Math.max(0, depthStraight - 1);
         }
         continue;
@@ -150,9 +149,10 @@ export const quotesRussianRule: TypographyRule = {
 
     // Закрываем незакрытые кавычки, если пользователь забыл закрывающую.
     // depth > 0 означает, что остались открытые кавычки без пары.
-    if (depth > 0) {
-      // Закрываем изнутри наружу: внутренние — «"» (U+201C), внешняя — "»" (U+00BB).
-      const closing = "\u201C".repeat(Math.max(0, depth - 1)) + "\u00BB";
+    if (stack.length > 0) {
+      // Закрываем изнутри наружу по стеку открытых («→», „→“, ‚→’).
+      let closing = "";
+      for (let k = stack.length - 1; k >= 0; k -= 1) closing += closeQuoteForOpen(stack[k]);
       // Кавычки ставим в конец последней содержательной строки: иначе при
       // тексте, оканчивающемся переводом строки, они образуют отдельную
       // строку и меняют структуру текста.
@@ -192,6 +192,22 @@ export const quotesTerminalDotRule: TypographyRule = {
   },
 };
 
+
+/**
+ * Открывающая кавычка по уровню вложенности: « → „ → ‚ (дальше по кругу).
+ */
+function openQuoteForDepth(depth: number): string {
+  return ["\u00AB", "\u201E", "\u201A"][depth % 3];
+}
+
+/**
+ * Закрывающая кавычка к парной открытой: « → », „ → “, ‚ → ’ (U+2019).
+ */
+function closeQuoteForOpen(open: string): string {
+  if (open === "\u00AB") return "\u00BB";
+  if (open === "\u201E") return "\u201C";
+  return "\u2019";
+}
 
 /**
  * Открывающая ли это вложенная кавычка (U+201C) внутри уже открытых

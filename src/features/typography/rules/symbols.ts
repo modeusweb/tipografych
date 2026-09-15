@@ -71,7 +71,7 @@ export const plusMinusRule: TypographyRule = {
   id: "plus-minus",
   name: "Знак плюс-минус",
   description:
-    "Склеивает «+-» и «+/-» в символ ± («5 +- 3» → «5 ± 3»). Обычное сложение «5 + 3» не трогается.",
+    "Склеивает «+-» и «+/-» в символ ± («5 +- 3» → «5 ± 3», «±0.05» в начале слова — тоже). Обычное сложение «5 + 3» не трогается.",
   category: "symbols",
   enabledByDefault: true,
   apply(text, ctx) {
@@ -79,8 +79,8 @@ export const plusMinusRule: TypographyRule = {
       ctx,
       plusMinusRule,
       text,
-      /(?<=\d)([ \t]*)\+(?:\/[ \t]*-|-)([ \t]*)(?=\d)/g,
-      (m) => `${m[1]}\u00B1${m[2]}`,
+      /((?:^|[\s\u00A0([{]))([ \t]*)\+(?:\/[ \t]*[-\u2212]|[-\u2212])([ \t]*)(?=\d)/g,
+      (m) => `${m[1]}${m[2]}\u00B1${m[3]}`,
     );
   },
 };
@@ -112,5 +112,36 @@ export const superscriptRule: TypographyRule = {
       const exp = Array.from(m[2], (d) => SUPERSCRIPT_DIGITS[Number(d)] ?? d).join("");
       return (m[1] ? "\u207B" : "") + exp;
     });
+  },
+};
+
+/**
+ * Знаки сравнения.
+ *
+ * «>=» и «<=» превращаются в ≥ и ≤: «x >= y» → «x ≥ y».
+ *
+ * Защита от ложных срабатываний:
+ *  - стрелка «<=>» (⇔) не разбивается: после «<=» не следует «=» или «>»;
+ *  - составные последовательности «>>=», «<<=», «===» отсечены границами;
+ *  - код (inline, fenced, содержимое script/pre) защищён токенами и
+ *    недоступен правилу.
+ */
+export const comparisonSignsRule: TypographyRule = {
+  id: "comparison-signs",
+  name: "Знаки сравнения",
+  description:
+    "Заменяет записи «>=» и «<=» на символы ≥ и ≤ («x >= y» → «x ≥ y»). Стрелка «<=>» и код не трогаются.",
+  category: "symbols",
+  enabledByDefault: true,
+  apply(text, ctx) {
+    let result = applyRegex(
+      ctx,
+      comparisonSignsRule,
+      text,
+      /(?<![<>=])>=(?![=>])/g,
+      () => "\u2265",
+    );
+    result = applyRegex(ctx, comparisonSignsRule, result, /(?<![<>=])<=(?![=>])/g, () => "\u2264");
+    return result;
   },
 };
