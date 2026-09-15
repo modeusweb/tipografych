@@ -4,9 +4,11 @@ import { alternation, applyRegex } from "./helpers";
 /**
  * Знаки валют.
  *
- * currency-spacing — между числом и знаком валюты ставится неразрывный
- * пробел: «5000000$» → «5000000\u00A0$», «4300000€» → «4300000\u00A0€».
- * Правило отключаемое — в некоторых контекстах валюту пишут через обычный пробел.
+ * currency-spacing — необязательная отбивка знака валюты неразрывным
+ * пробелом: «5000000$» → «5000000\u00A0$», «4300000€» → «4300000\u00A0€».
+ * По умолчанию выключено: знак валюты принято писать слитно с числом
+ * («20$», «$20»), поэтому типограф не должен «исправлять» такую запись.
+ * Правило включено только в пресете «Издательская».
  */
 const CURRENCY = ["$", "€", "£", "¥", "₽"];
 
@@ -16,9 +18,9 @@ export const currencySpacingRule: TypographyRule = {
   id: "currency-spacing",
   name: "Валютные символы",
   description:
-    "Отделяет знаки валют ($, €, £, ¥, ₽) от числа неразрывным пробелом («5000000$» → «5000000\u00A0$).",
+    "Отбивает знаки валют ($, €, £, ¥) от числа неразрывным пробелом («5000000$» → «5000000\\u00A0$»). По умолчанию выключено: «20$» остаётся слитным. Включено в пресете «Издательская».",
   category: "units",
-  enabledByDefault: true,
+  enabledByDefault: false,
   apply(text, ctx) {
     return applyRegex(ctx, currencySpacingRule, text, CURRENCY_RE, (m) => m[1] + "\u00A0" + m[2]);
   },
@@ -92,6 +94,47 @@ export const currencyRublesRule: TypographyRule = {
       result,
       new RegExp("(\\d+)[ \\t\\u00A0]*" + RUBLE_WORD + "(?![.\\p{L}\\p{N}])", "gu"),
       (m) => m[1] + "\u00A0\u20BD",
+    );
+  },
+};
+
+/**
+ * Буквенные обозначения валют.
+ *
+ * currency-abbreviations — число и словесное обозначение валюты не должны
+ * слипаться: «100долл.» → «100\u00A0долл.», «50грн» → «50\u00A0грн».
+ * Разделитель — неразрывный пробел, как и у знаков валют (currency-spacing).
+ *
+ * Рубль сюда не входит: его обрабатывает правило «Знак рубля ₽»
+ * (currency-rubles), которое выполняется раньше. Формы слов даны целиком,
+ * чтобы не трогать слова, начинающиеся так же: «100долларовый» не меняется.
+ */
+const CURRENCY_WORDS: readonly string[] = [
+  "долларов", "доллары", "доллара", "доллар", "долл",
+  "гривен", "гривны", "гривна", "грн",
+  "копеек", "копейки", "копейка", "коп",
+  "тенге", "евро", "тг",
+];
+
+const CURRENCY_WORDS_RE = new RegExp(
+  "(\\d)[ \\t\\u00A0]*(" + alternation(CURRENCY_WORDS) + ")(?![\\p{L}\\p{N}])",
+  "giu",
+);
+
+export const currencyAbbreviationsRule: TypographyRule = {
+  id: "currency-abbreviations",
+  name: "Валюты сокращённо",
+  description:
+    "Отбивает буквенные обозначения валют от числа неразрывным пробелом («100долл.» → «100\\u00A0долл.», «50грн» → «50\\u00A0грн»).",
+  category: "units",
+  enabledByDefault: true,
+  apply(text, ctx) {
+    return applyRegex(
+      ctx,
+      currencyAbbreviationsRule,
+      text,
+      CURRENCY_WORDS_RE,
+      (m) => m[1] + "\u00A0" + m[2],
     );
   },
 };

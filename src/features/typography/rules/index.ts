@@ -18,7 +18,13 @@ import {
   nbspSymbolsRule,
   nbspUnitsRule,
 } from "./nbsp";
-import { currencyRublesRule, currencySignPositionRule, currencySpacingRule } from "./currency";
+import {
+  currencyAbbreviationsRule,
+  currencyRublesRule,
+  currencySignPositionRule,
+  currencySpacingRule,
+} from "./currency";
+import { nameCapitalizationRule } from "./names";
 import { roomNumberRule } from "./room-number";
 import { phoneFormatRule } from "./phones";
 import { abbreviationsRule } from "./abbreviations";
@@ -48,23 +54,25 @@ export { UNITS } from "./units";
  * 15.  percent-spacing    проценты
  * 16.  temperature        температура и градусы
  * 17.  units-spacing      пробел между числом и единицей
- * 18.  currency-spacing   валютные символы
+ * 18.  currency-spacing   отбивка знаков валют («5000000$» → «5000000 $»; выключено по умолчанию, только в «Издательской»)
  * 19.  currency-rubles    «90руб.» → «90 ₽» (после пробелов у пунктуации)
- * 20.  currency-sign-position «$100» → «100 $» (только в «Издательской»)
- * 21.  numbers-thousands  разделители разрядов
- * 22.  spaces-multiple    двойные пробелы (до NBSP-правил)
- * 23.  spaces-edges       пробелы в начале/конце строк
- * 24.  empty-lines        лишние пустые строки (после spaces-edges)
- * 25.  nbsp-prepositions  неразрывные пробелы: предлоги
- * 26.  nbsp-initials      неразрывные пробелы: инициалы
- * 27.  nbsp-symbols       неразрывные пробелы: № и §
- * 28.  nbsp-units         неразрывные пробелы: единицы измерения
- * 29.  phone-format       форматирование телефонов
- * 30.  abbreviations      пробелы после сокращений
- * 31.  city-abbr          сокращение «г.» перед городом
- * 32.  year-abbr          сокращение года («2026г.» → «2026 г.»)
- * 33.  number-abbreviations числовые сокращения (млрд, млн)
- * 34.  room-number        знак номера (N312 → № 312)
+ * 20.  currency-abbreviations «100долл.» → «100 долл.»
+ * 21.  currency-sign-position «$100» → «100 $» (только в «Издательской»)
+ * 22.  numbers-thousands  разделители разрядов
+ * 23.  spaces-multiple    двойные пробелы (до NBSP-правил)
+ * 24.  spaces-edges       пробелы в начале/конце строк
+ * 25.  empty-lines        лишние пустые строки (после spaces-edges)
+ * 26.  name-capitalization заглавные буквы в именах (до nbsp-initials)
+ * 27.  nbsp-prepositions  неразрывные пробелы: предлоги
+ * 28.  nbsp-initials      неразрывные пробелы: инициалы
+ * 29.  nbsp-symbols       неразрывные пробелы: № и §
+ * 30.  nbsp-units         неразрывные пробелы: единицы измерения
+ * 31.  phone-format       форматирование телефонов
+ * 32.  abbreviations      пробелы после сокращений
+ * 33.  city-abbr          сокращение «г.» перед городом
+ * 34.  year-abbr          сокращение года («2026г.» → «2026 г.»)
+ * 35.  number-abbreviations числовые сокращения (млрд, млн)
+ * 36.  room-number        знак номера (N312 → № 312)
  *
  * Правила с флагом `runBeforeProtection` (phone-format, year-abbr)
  * выполняются раньше остальных — до того, как protection заменит
@@ -88,11 +96,13 @@ export const TYPOGRAPHY_RULES: readonly TypographyRule[] = [
   unitsSpacingRule,
   currencySpacingRule,
   currencyRublesRule,
+  currencyAbbreviationsRule,
   currencySignPositionRule,
   numbersThousandsRule,
   spacesMultipleRule,
   spacesEdgesRule,
   emptyLinesRule,
+  nameCapitalizationRule,
   nbspPrepositionsRule,
   nbspInitialsRule,
   nbspSymbolsRule,
@@ -116,6 +126,7 @@ export const CATEGORY_LABELS: Record<RuleCategory, string> = {
   numbers: "Числа",
   units: "Единицы измерения",
   percent: "Проценты",
+  case: "Регистр",
 };
 
 export function getRuleById(id: string): TypographyRule | undefined {

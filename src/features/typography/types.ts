@@ -16,7 +16,8 @@ export type RuleCategory =
   | "nbsp"
   | "numbers"
   | "units"
-  | "percent";
+  | "percent"
+  | "case";
 
 /** Пример изменения (для сводки и примеров изменений). */
 export interface ChangeSample {
