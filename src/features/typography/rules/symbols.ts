@@ -56,3 +56,61 @@ export const legalSymbolsRule: TypographyRule = {
     return result;
   },
 };
+
+/**
+ * Плюс-минус.
+ *
+ * «+-» и «+/-» между числами — это знак ±, набранный в две клавиши:
+ * «5 +- 3» → «5 ± 3». Обычное сложение «5 + 3» не трогается: после
+ * плюса нет минуса. Пробелы вокруг знака сохраняются.
+ *
+ * Правило выполняется ДО правил тире и минуса, чтобы дефис в «+-»
+ * не успел превратиться в тире или типографский минус.
+ */
+export const plusMinusRule: TypographyRule = {
+  id: "plus-minus",
+  name: "Знак плюс-минус",
+  description:
+    "Склеивает «+-» и «+/-» в символ ± («5 +- 3» → «5 ± 3»). Обычное сложение «5 + 3» не трогается.",
+  category: "symbols",
+  enabledByDefault: true,
+  apply(text, ctx) {
+    return applyRegex(
+      ctx,
+      plusMinusRule,
+      text,
+      /(?<=\d)([ \t]*)\+(?:\/[ \t]*-|-)([ \t]*)(?=\d)/g,
+      (m) => `${m[1]}\u00B1${m[2]}`,
+    );
+  },
+};
+
+/** ASCII-цифра → надстрочная (для степеней). */
+const SUPERSCRIPT_DIGITS: readonly string[] = [
+  "\u2070", "\u00B9", "\u00B2", "\u00B3", "\u2074",
+  "\u2075", "\u2076", "\u2077", "\u2078", "\u2079",
+];
+
+/**
+ * Надстрочные степени: степень, набранная через «^», превращается в
+ * верхний индекс: «10^8» → «10⁸», «2^-3» → «2⁻³».
+ *
+ * Выполняется ПОСЛЕ «multiplication»: в «3 x 10^8» сперва должен
+ * сработать знак умножения, иначе после «10⁸» не останется цифры для
+ * его lookahead. Минус в показателе может прийти уже типографским
+ * (U+2212, его успело заменить правило «minus-sign») — принимаем оба.
+ */
+export const superscriptRule: TypographyRule = {
+  id: "superscript",
+  name: "Надстрочные степени",
+  description:
+    "Превращает степень, набранную через «^», в верхний индекс: «10^8» → «10⁸», «2^-3» → «2⁻³».",
+  category: "symbols",
+  enabledByDefault: true,
+  apply(text, ctx) {
+    return applyRegex(ctx, superscriptRule, text, /\^([\u2212-]?)(\d+)/g, (m) => {
+      const exp = Array.from(m[2], (d) => SUPERSCRIPT_DIGITS[Number(d)] ?? d).join("");
+      return (m[1] ? "\u207B" : "") + exp;
+    });
+  },
+};

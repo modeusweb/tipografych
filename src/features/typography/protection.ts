@@ -142,6 +142,16 @@ function tokenizeRanges(
 
 const HTML_COMMENT: Scanner = { pattern: /<!--[\s\S]*?-->/g };
 const HTML_TAG: Scanner = { pattern: /<\/?[a-zA-Z!][^>]*>/g };
+
+/**
+ * Содержимое тегов с кодом: <script>, <style>, <pre>, <code>.
+ * Защищается ЦЕЛИКОМ вместе с тегами: кавычки, тире и пробелы внутри
+ * кода менять нельзя — скопированный в браузер код сломается
+ * (типографская кавычка в alert('hack') — это SyntaxError).
+ */
+const CODE_TAG_CONTENT: Scanner = {
+  pattern: /<(script|style|pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
+};
 const INLINE_CODE: Scanner = { pattern: /(`{1,3})[^`\n]*?\1/g };
 const MD_LINK: Scanner = { pattern: /\]\([^()\n]{0,500}\)/g };
 const URL: Scanner = { pattern: /(?:https?:\/\/|www\.)[^\s<>«»]+/gi };
@@ -259,6 +269,7 @@ export function protectFragments(
   if (inlineCodeEnabled) working = runScanner(working, INLINE_CODE, fragments);
 
   if (protection.html || protection.code || format === "html") {
+    working = runScanner(working, CODE_TAG_CONTENT, fragments);
     working = runScanner(working, HTML_COMMENT, fragments);
     working = runScanner(working, HTML_TAG, fragments);
   }

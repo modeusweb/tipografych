@@ -164,3 +164,38 @@ export const currencySignPositionRule: TypographyRule = {
     return applyRegex(ctx, currencySignPositionRule, text, CURRENCY_PREFIX_RE, (m) => m[2] + "\u00A0" + m[1]);
   },
 };
+
+/**
+ * Знаки валют пишутся вплотную к числу: «$ 100» → «$100», «100 $» → «100$».
+ *
+ * Выполняется ДО «currency-spacing»: в «Издательской» типографике то же
+ * правило с настроенной отбивкой может разъединить пару обратно
+ * («100\u00A0$»), а «currency-sign-position» — перенести знак за число.
+ */
+export const currencySignGlueRule: TypographyRule = {
+  id: "currency-sign-glue",
+  name: "Знаки валют вплотную к числу",
+  description:
+    "Убирает пробел между знаком валюты ($, €, £, ¥) и числом: «$ 100» → «$100», «100 $» → «100$».",
+  category: "units",
+  enabledByDefault: true,
+  apply(text, ctx) {
+    // «$ 100» → «$100»: знак перед числом.
+    let result = applyRegex(
+      ctx,
+      currencySignGlueRule,
+      text,
+      /([$\u20AC\u00A3\u00A5])[ \t]+(?=\d)/g,
+      (m) => m[1],
+    );
+    // «100 $» → «100$»: знак после числа.
+    result = applyRegex(
+      ctx,
+      currencySignGlueRule,
+      result,
+      /(?<=\d)[ \t]+([$\u20AC\u00A3\u00A5])/g,
+      (m) => m[1],
+    );
+    return result;
+  },
+};

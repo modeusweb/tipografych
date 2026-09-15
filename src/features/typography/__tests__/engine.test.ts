@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { typograph } from "../pipeline";
 import { hasUnresolvedTokens } from "../protection";
-import { PRESETS } from "../presets";
+import { DEFAULT_PROTECTION, PRESETS } from "../presets";
 import { TYPOGRAPHY_CONFIG } from "../config";
 import { diffLines, inlineDiffParts } from "../diff";
 
@@ -56,6 +56,15 @@ describe("Защита фрагментов", () => {
   it("URL с дефисом в пути не превращается в тире", () => {
     const text = "Проверка https://example.com/2020-2025/report.";
     expect(t(text)).toContain("https://example.com/2020-2025/report");
+  });
+
+  it("содержимое <script> не изменяется правилами", () => {
+    const text = "<script>alert('hack')</script>";
+    const result = typograph(text, {
+      enabledRules: russian.enabledRules,
+      protection: DEFAULT_PROTECTION,
+    });
+    expect(result.text).toBe("<script>alert('hack')</script>");
   });
 
   it("голый домен не ломается", () => {

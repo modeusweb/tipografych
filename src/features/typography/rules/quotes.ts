@@ -115,7 +115,11 @@ export const quotesRussianRule: TypographyRule = {
         // пробела, поэтому решаем по глубине открытых прямых кавычек:
         // есть открытая — это её закрывающая пара.
         const treatAsClosing =
-          prevIsBoundary && nextIsBoundary ? depthStraight > 0 : !prevIsBoundary;
+          prevIsBoundary && nextIsBoundary
+            ? isQuoteAfterDashOrBreak(text, i)
+              ? false
+              : depthStraight > 0
+            : !prevIsBoundary;
         if (!treatAsClosing) {
           const openChar = depth === 0 ? "\u00AB" : "\u201E";
           out += openChar;
@@ -204,6 +208,25 @@ function isNestedOpeningQuote(text: string, index: number): boolean {
   const afterBreak = prev === "" || /[\s([{\u00AB\u201E\u2014\u2013-]/.test(prev);
   const beforeWord = next !== "" && !/[\s.,;:!?)\u00BB\u201C\u201D]/.test(next);
   return afterBreak && beforeWord;
+}
+
+/**
+ * Прямая кавычка с пробелами с обеих сторон стоит после тире/дефиса,
+ * открывающей скобки или кавычки, либо в начале строки/текста?
+ *
+ * Такая позиция всегда означает ОТКРЫТИЕ цитаты («слоган - " Качество»,
+ * «он крикнул:\n"Бежим»), даже если другая цитата уже открыта: это
+ * открывающая кавычка ВЛОЖЕННОЙ цитаты. Закрывающая кавычка пишется
+ * вплотную к последнему слову («работать"»), поэтому слева от неё
+ * никогда не стоит тире или начало строки.
+ */
+function isQuoteAfterDashOrBreak(text: string, index: number): boolean {
+  let i = index - 1;
+  while (i >= 0 && /[ \t\u00A0]/.test(text[i])) i -= 1;
+  if (i < 0) return true; // начало текста
+  const ch = text[i];
+  if (ch === "\n") return true; // начало строки
+  return /[-\u2013\u2014([{«„‹]/.test(ch);
 }
 
 /**

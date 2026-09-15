@@ -18,11 +18,11 @@ export const multiplicationRule: TypographyRule = {
   id: "multiplication",
   name: "Знак умножения",
   description:
-    "Заменяет «x» и кириллическую «х» между числами на знак умножения × («5х5» → «5×5»). Hex-литералы вида 0x1F не трогаются.",
+    "Заменяет «x» и кириллическую «х» между числами (в том числе с пробелами: «3 x 10») на знак умножения × («5х5» → «5×5»). Hex-литералы вида 0x1F не трогаются.",
   category: "symbols",
   enabledByDefault: true,
   apply(text, ctx) {
-    return applyRegex(ctx, multiplicationRule, text, /(?<=\d)[xX\u0445\u0425](?=\d)/g, (m) => {
+    return applyRegex(ctx, multiplicationRule, text, /(?<=\d)[ \t\u00A0]?[xX\u0445\u0425][ \t\u00A0]?(?=\d)/g, (m) => {
       const prev = text.charAt(m.index - 1);
       const beforePrev = m.index >= 2 ? text.charAt(m.index - 2) : "";
       // «0x1F», «0Xdead»: перед «x» — один нуль, значит это hex-литерал.
