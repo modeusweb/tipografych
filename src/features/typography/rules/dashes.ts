@@ -215,12 +215,23 @@ export const dashRangesRule: TypographyRule = {
   id: "dash-ranges",
   name: "Диапазоны",
   description:
-    "Заменяет дефис в числовых диапазонах на короткое тире («2020-2025» → «2020–2025»). Дефисы внутри слов и идентификаторы не трогаются.",
+    "Заменяет дефис в числовых диапазонах на короткое тире («2020-2025» → «2020–2025»), в том числе в римских веках с контекстом («XVI-XVII веках» → «XVI–XVII»). Дефисы внутри слов и идентификаторы не трогаются.",
   category: "dashes",
   enabledByDefault: true,
   apply(text, ctx) {
     let result = applyRegex(ctx, dashRangesRule, text, /(?<=\d)[ \t]?-[ \t]?(?=\d)/g, () => "\u2013");
     result = applyRegex(ctx, dashRangesRule, result, /(?<=\d)[\u2013\u2014](?=\d)/g, () => "\u2013");
+    // Римские века/столетия с явным контекстом: «XVI-XVII веках»,
+    // «XX - XXI век» → «XVI–XVII», «XX–XXI». Без контекста («XX-XXI»)
+    // не трогаем: аббревиатуры из римских букв (LCD, MIX, DIM) встречаются
+    // и в другом значении.
+    result = applyRegex(
+      ctx,
+      dashRangesRule,
+      result,
+      /(?<![IVXLCDM])([IVXLCDM]{1,6})[ \t\u00A0]*[-\u2014][ \t\u00A0]*([IVXLCDM]{1,6})(?![IVXLCDM])(?=[ \t\u00A0]+(?:вв?\.|век[а-яё]*|столет[а-яё]*))/g,
+      (m) => `${m[1]}\u2013${m[2]}`,
+    );
     return result;
   },
 };

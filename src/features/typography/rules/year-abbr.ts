@@ -21,15 +21,24 @@ export const yearAbbrRule: TypographyRule = {
   id: "year-abbr",
   name: "Сокращение «г.» после года",
   description:
-    "Отбивает сокращение года неразрывным пробелом: «01.01.2026г.» → «01.01.2026 г.», «2025-2026гг.» → «2025-2026 гг.».",
+    "Отбивает сокращение года неразрывным пробелом («01.01.2026г.» → «01.01.2026 г.», «2025-2026гг.» → «2025-2026 гг.»), а диапазон годов с единственным «г.» переводит во множественное число («2012-2015 г.» → «2012-2015 гг.»).",
   category: "punctuation",
   enabledByDefault: true,
   runBeforeProtection: true,
   apply(text, ctx) {
-    return applyRegex(
+    // Диапазон годов с единственным «г.» → «гг.»: «2012-2015 г.» →
+    // «2012-2015 гг.» (дефис диапазона затем правит «dash-ranges»).
+    const result = applyRegex(
       ctx,
       yearAbbrRule,
       text,
+      /(\d{4})([ \t]*[-\u2013][ \t]*)(\d{4})[ \t\u00A0]*г\.(?![\p{L}\p{N}])/gu,
+      (m) => `${m[1]}${m[2]}${m[3]}\u00A0гг.`,
+    );
+    return applyRegex(
+      ctx,
+      yearAbbrRule,
+      result,
       /(?<=\d)[ \t\u00A0]*(г{1,2}\.)(?![\p{L}\p{N}])/gu,
       (m) => "\u00A0" + m[1],
     );
