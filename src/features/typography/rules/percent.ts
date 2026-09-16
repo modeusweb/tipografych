@@ -19,11 +19,12 @@ export const percentSpacingRule: TypographyRule = {
   enabledByDefault: true,
   apply(text, ctx) {
     // Десятичная запятая: «0.5 %», «0.5%» → «0,5%».
+    // Не меняем точку на запятую если перед числом стоит знак ± или =
     let result = applyRegex(
       ctx,
       percentSpacingRule,
       text,
-      /(\d)\.(\d)(?=[ \t\u00A0]*%)/g,
+      /(?<![±=])(\d)\.(\d+)(?=[ \t\u00A0]*%)/g,
       (m) => `${m[1]},${m[2]}`,
     );
     result = applyRegex(

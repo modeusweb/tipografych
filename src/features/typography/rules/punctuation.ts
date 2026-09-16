@@ -144,3 +144,44 @@ export const spaceAfterPunctRule: TypographyRule = {
     );
   },
 };
+
+/**
+ * Удаление ошибочных двоеточий после союзов.
+ *
+ * После союзов «что», «который», «если», «когда» и других не должно стоять двоеточие:
+ * «отметил,что: «данный...»» → «отметил, что: «данный...»» (двоеточие удаляется,
+ * так как после союза цитата вводится запятой или без знака).
+ */
+export const colonAfterConjunctionRule: TypographyRule = {
+  id: "colon-after-conjunction",
+  name: "Двоеточие после союзов",
+  description:
+    "Удаляет ошибочные двоеточия после союзов «что», «который», «если», «когда» и других («отметил,что:» → «отметил, что»).",
+  category: "punctuation",
+  enabledByDefault: true,
+  apply(text, ctx) {
+    const conjunctions = [
+      "что", "который", "которая", "которое", "которые",
+      "если", "когда", "пока", "так как", "поскольку", "потому что",
+      "хотя", "несмотря на то что", "для того чтобы", "чтобы"
+    ];
+    const pattern = new RegExp(
+      `([,]?[ \t]*(${conjunctions.join("|")})[ \t]*):(?=[ \t]*[«"„])`,
+      "gi"
+    );
+    return applyRegex(
+      ctx,
+      colonAfterConjunctionRule,
+      text,
+      pattern,
+      (m) => {
+        const beforeColon = m[1];
+        // Если перед союзом есть запятая, оставляем её и добавляем обычный пробел
+        if (beforeColon.includes(",")) {
+          return beforeColon.replace(/,/g, ", ") + " ";
+        }
+        return beforeColon + " ";
+      },
+    );
+  },
+};
