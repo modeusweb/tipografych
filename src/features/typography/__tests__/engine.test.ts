@@ -33,7 +33,7 @@ const TOKENS = [
   "50 %",
 ];
 
-const SEPARATORS = [" ", "  ", "\n", "-", ".", ",", "!", "(", ")", ":"];
+const SEPARATORS = [" ", "  ", "\n", "-", ".", ",", "!", "(", ")", ":", " --- ", " ---- "];
 
 /** Детерминированный PRNG для повторяемых fuzz-тестов. */
 function mulberry32(seed: number): () => number {
@@ -171,6 +171,8 @@ describe("Идемпотентность", () => {
       "В 2020-2025 годах температура достигла 20 °C.",
       "И. И. Иванов купил 5 кг и 1000000 единиц.",
       "Текст с URL https://example.com/path-1?q=hello и `inline-кодом`.",
+      "Раздел --- два -- три, а тут - - - четыре.",
+      "Раздел --- два --- три.",
     ];
     for (const input of strings) {
       const first = typograph(input, options);
